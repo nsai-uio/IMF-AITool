@@ -1,12 +1,13 @@
 import os
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from werkzeug.utils import secure_filename
+import re
 import json
 import threading
 import uuid
 from dotenv import load_dotenv
 # from utils import get_pdf_vector, create_qa_chain 
-from utils import parse_json
+# from utils import parse_json
 import google.generativeai as genai
 from PyPDF2 import PdfReader
 
@@ -27,6 +28,41 @@ os.makedirs(app.config['PROCESSED_DATA_FOLDER'], exist_ok=True)
 
 # Global dictionary to store task status
 task_status = {}
+
+def parse_json(results_string):
+    cleaned_string = results_string.replace('\n', '')
+    # matches a closing quote followed by a closing brace or bracket, followed by an opening quote (indicating missing comma)
+    json_string = re.sub(r'"\s*([\]}])\s*"', r'"\1,""', cleaned_string)
+    # Add commas after objects and arrays if not followed by a comma or end of object/array
+    json_string = re.sub(r'([\]}])\s*([^\],})\s*\n])', r'\1,\2', json_string)
+    # Remove trailing commas before closing braces
+    json_string = re.sub(r',\s*}', '}', json_string)
+    match = re.search(r'\{.*\}', json_string, re.DOTALL)
+    if match:
+        content = match.group(0)
+        # print(content)
+    else:
+        print("No content found between curly braces.")
+    
+    try:
+        res_dict = json.loads(content)
+        return res_dict
+    except json.JSONDecodeError as e:
+        if "Expecting ',' delimiter" in str(e):
+            print(f"JSON error detected: {e}")
+            # Attempt to fix the JSON by adding a closing bracket
+            fixed_json_string = content.rstrip() + '}'
+            try:
+                # Try to load the fixed JSON string
+                res_dict = json.loads(fixed_json_string)
+                print("JSON was fixed and is now valid")
+                return res_dict
+            except json.JSONDecodeError as e:
+                print(f"JSON format error after attempting to fix: {e}")
+                return None
+        else:
+            print(f"JSON format error: {e}")
+        return {}
 
 def process_pdf_task(task_id, pdf_path, filename, processed_folder):
     try:
