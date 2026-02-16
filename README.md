@@ -11,5 +11,14 @@ install packages
 
 ```pip install google-generativeai```
 
+set up environment variables locally for API key (Mac)
+1. open your configuration file:
+```nano ~/.zshrc```
+2. Add this line, then save and exit:
+```export GOOGLE_API_KEY="Your API Key"```
+3. source the configuration file:
+```source ~/.zshrc```
+
+
 # Run
 ```python app.py```

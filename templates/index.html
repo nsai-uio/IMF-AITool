@@ -13,7 +13,7 @@
         #main-container { display: flex; flex: 1; overflow: hidden; }
         
         /* Chat Section */
-        #chat-panel { width: 350px; background: #f8f9fa; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+        #chat-panel { width: 300px; background: #f8f9fa; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
         #chat-history { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
         .message { padding: 10px; border-radius: 8px; max-width: 85%; word-wrap: break-word; }
         .user-msg { background-color: #3498db; color: white; align-self: flex-end; }
@@ -21,7 +21,17 @@
         #chat-input-area { padding: 15px; border-top: 1px solid #ddd; display: flex; gap: 5px; background: white; }
         #question { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         button { padding: 8px 15px; background-color: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #34495e; }
+        button:hover:not(:disabled) { background-color: #34495e; }
+
+        /* Control Panel Section */
+        #control-panel { width: 400px; background: #f0f2f5; border-right: 1px solid #ddd; display: flex; flex-direction: column; padding: 15px; gap: 15px; overflow-y: auto; }
+        .control-section { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .control-desc { font-size: 0.85rem; color: #666; margin-bottom: 10px; line-height: 1.4; }
+        .btn-row { display: flex; gap: 5px; align-items: center; }
+        .btn-row button.action-btn { flex: 1; text-align: left; font-size: 0.9rem; }
+        button.export-btn { width: auto; padding: 8px 10px; background-color: #7f8c8d; font-size: 0.8rem; white-space: nowrap; }
+        button.export-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        button.export-btn:hover:not(:disabled) { background-color: #95a5a6; }
 
         /* Visualization Section */
         #vis-panel { flex: 1; position: relative; background: white; }
@@ -34,38 +44,100 @@
 <body>
     <header>
         <h1>IMF application</h1>
-        <div class="controls">
-            <div style="display:flex; flex-direction:column; gap:5px;">
-                <form id="uploadForm" style="display:flex; gap: 10px;">
-                    <input type="file" name="file" accept=".pdf" required>
-                    <button type="submit">Upload</button>
-                </form>
-                <div id="progress-container" style="display:none; width: 100%; background: #ddd; border-radius: 4px; height: 10px; overflow: hidden;">
-                    <div id="progress-bar" style="width: 0%; height: 100%; background: #3498db; transition: width 0.5s;"></div>
-                </div>
-                <div id="status-text" style="font-size: 10px; color: #ccc; text-align: center;"></div>
-            </div>
-            <select id="fileSelect" onchange="loadData()">
-                <option value="">-- Select Processed File --</option>
-                {% for file in processed_files %}
-                    {% if not file.endswith('_components.json') %}
-                    <option value="{{ file }}">{{ file }}</option>
-                    {% endif %}
-                {% endfor %}
-            </select>
-        </div>
     </header>
 
     <div id="main-container">
         <div id="chat-panel">
             <div id="chat-history">
-                <div class="message bot-msg">Select a file to ask questions.</div>
+                <div class="message bot-msg">Ask anything about IMF. Select a file to ask questions.</div>
             </div>
             <div id="chat-input-area">
                 <input type="text" id="question" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') sendQuestion()">
                 <button onclick="sendQuestion()">Send</button>
             </div>
         </div>
+        
+        <div id="control-panel">
+            <div class="control-section" style="background: #e0f7fa; border-color: #b2ebf2;">
+                <h3 style="margin-top: 0; font-size: 1.1rem; color: #00796b;">Welcome to IMF Application!</h3>
+                <p style="font-size: 0.85rem; color: #333;">This tool helps you extract, model, and verify system information from industrial documents (PDF). Follow the steps below to process your document and explore how AI can assist in modelling system information.</p>
+            </div>
+
+            <div class="control-section">
+                <h3 style="margin-top: 0; font-size: 1rem; margin-bottom: 10px;">File Selection</h3>
+                <input type="file" id="fileInput" name="file" accept=".pdf" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;">
+                <select id="fileSelect" onchange="loadData()" style="width: 100%; padding: 5px;">
+                    <option value="">-- Select Processed File --</option>
+                    {% for file in processed_files %}
+                        <option value="{{ file }}">{{ file }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="control-section">
+                <div class="control-desc">Step 1: Extract and create a hierarchical system components from the uploaded document.</div>
+                <div class="btn-row" style="justify-content: space-between;">
+                    <button id="step1Btn" class="action-btn">Component extraction</button>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="exportStep1Btn" class="export-btn" disabled title="Download Components">Export</button>
+                        <button id="visualizeStep1Btn" class="export-btn" disabled title="Visualize Components">Visualize</button>
+                    </div>
+                </div>
+                <div id="progress-container-step1" style="display:none; width: 100%; background: #ddd; border-radius: 4px; height: 8px; overflow: hidden; margin-top: 10px;">
+                    <div id="progress-bar-step1" style="width: 0%; height: 100%; background: #3498db; transition: width 0.5s;"></div>
+                </div>
+                <div id="status-text-step1" style="font-size: 0.8rem; color: #666; text-align: center; margin-top: 5px;"></div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-desc">Step 2: Extract relations between components and create a preliminary model.</div>
+                <div class="btn-row" style="justify-content: space-between;">
+                    <button id="step2Btn" class="action-btn" disabled>Relation extraction</button>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="exportStep2Btn" class="export-btn" disabled title="Download Relations">Export</button>
+                        <button id="visualizeStep2Btn" class="export-btn" disabled title="Visualize Relations">Visualize</button>
+                    </div>
+                </div>
+                <div id="progress-container-step2" style="display:none; width: 100%; background: #ddd; border-radius: 4px; height: 8px; overflow: hidden; margin-top: 10px;">
+                    <div id="progress-bar-step2" style="width: 0%; height: 100%; background: #3498db; transition: width 0.5s;"></div>
+                </div>
+                <div id="status-text-step2" style="font-size: 0.8rem; color: #666; text-align: center; margin-top: 5px;"></div>
+            </div>
+
+            <div class="control-section">
+                <div class="control-desc">Step 3: Verify the correctness of the prelimary model by asking verification questions to the LLM. </div>
+                <div class="btn-row" style="justify-content: space-between;">
+                    <button id="selfCheckBtn" class="action-btn" disabled>LLM self verification</button>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="exportStep3Btn" class="export-btn" disabled title="Download Verified Relations">Export</button>
+                        <button id="visualizeStep3Btn" class="export-btn" disabled title="Visualize Verified Relations">Visualize</button>
+                    </div>
+                </div>
+                <div class="btn-row" style="margin-top: 10px; justify-content: flex-end;">
+                    <button id="exportErrorLogBtn" class="export-btn" disabled title="Download Self-Verification Log">Export error log</button>
+                </div>
+                <div id="progress-container-step3" style="display:none; width: 100%; background: #ddd; border-radius: 4px; height: 8px; overflow: hidden; margin-top: 10px;">
+                    <div id="progress-bar-step3" style="width: 0%; height: 100%; background: #3498db; transition: width 0.5s;"></div>
+                </div>
+                <div id="status-text-step3" style="font-size: 0.8rem; color: #666; text-align: center; margin-top: 5px;"></div>
+            </div>
+            <div class="control-section">
+                <div class="control-desc">You can customize the model by selecting desired relations.</div>
+                <div class="btn-row" style="margin-top: 10px; justify-content: space-between;">
+                    <button id="exportSelectedBtn" class="action-btn" disabled>Export selected relations</button>
+                    <button id="visualizeSelectedBtn" class="export-btn" disabled>Visualize</button>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <div class="control-desc">You can choose and convert the result to IMF file, which can be further used in the IMF Editor.</div>
+                <div class="btn-row" style="margin-top: 10px;">
+                    <button id="convertToImfBtn" class="action-btn" disabled>Convert to IMF file</button>
+                </div>
+            </div>
+
+        </div>
+
         <div id="vis-panel">
             <div id="cy"></div>
             <div class="legend">
@@ -76,25 +148,66 @@
         </div>
     </div>
 
+    <!-- Modal for Export Selected Relations -->
+    <div id="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;"></div>
+    <div id="relation-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 1000; width: 300px;">
+        <h3 style="margin-top: 0;">Select Relations to Export</h3>
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin: 5px 0;"><input type="checkbox" value="tagID" checked disabled> tagID (always included)</label>
+            <label style="display:block; margin: 5px 0;"><input type="checkbox" value="partOf" checked> partOf</label>
+            <label style="display:block; margin: 5px 0;"><input type="checkbox" value="fulfills" checked> fulfills</label>
+            <label style="display:block; margin: 5px 0;"><input type="checkbox" value="connectedTo" checked> connectedTo</label>
+            <label style="display:block; margin: 5px 0;"><input type="checkbox" value="hasTerminal" checked> hasTerminal</label>
+        </div>
+        <div style="text-align: right;">
+            <button id="cancelExportBtn" style="background-color: #ccc; margin-right: 5px;">Cancel</button>
+            <button id="visualizeExportBtn" class="export-btn" style="margin-right: 5px;">Visualize</button>
+            <button id="confirmExportBtn">Export</button>
+        </div>
+    </div>
+
+    <!-- Modal for IMF Conversion -->
+    <div id="imf-modal" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 1000; width: 300px;">
+        <h3 style="margin-top: 0;">Select Model to Convert</h3>
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; margin: 5px 0;"><input type="radio" name="imfModelType" value="preliminary" checked> Preliminary model</label>
+            <label style="display:block; margin: 5px 0;"><input type="radio" name="imfModelType" value="verified"> Self_verified model</label>
+            <label style="display:block; margin: 5px 0;"><input type="radio" name="imfModelType" value="custom"> Custom model</label>
+        </div>
+        <div style="text-align: right;">
+            <button id="cancelImfBtn" style="background-color: #ccc; margin-right: 5px;">Cancel</button>
+            <button id="confirmImfBtn">Convert & Download</button>
+        </div>
+    </div>
+
     <script>
         let cy;
 
-        document.getElementById('uploadForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const submitBtn = this.querySelector('button');
-            const originalText = submitBtn.textContent;
+        document.getElementById('step1Btn').addEventListener('click', function() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert("Please select a file to upload.");
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
             
-            const progressContainer = document.getElementById('progress-container');
-            const progressBar = document.getElementById('progress-bar');
-            const statusText = document.getElementById('status-text');
+            const step1Btn = this;
+            const step2Btn = document.getElementById('step2Btn');
+            
+            // Disable all action buttons
+            const progressContainer = document.getElementById('progress-container-step1');
+            const progressBar = document.getElementById('progress-bar-step1');
+            const statusText = document.getElementById('status-text-step1');
 
-            submitBtn.disabled = true;
+            step1Btn.disabled = true;
+            step2Btn.disabled = true;
             progressContainer.style.display = 'block';
+            document.getElementById('selfCheckBtn').disabled = true;
             progressBar.style.width = '0%';
-            statusText.textContent = 'Starting...';
+            statusText.textContent = 'Starting Step 1...';
 
-            fetch('/upload', {
+            fetch('/step1_components', {
                 method: 'POST',
                 body: formData
             })
@@ -115,8 +228,12 @@
                                 } else if (statusData.status === 'completed') {
                                     clearInterval(pollInterval);
                                     progressBar.style.width = '100%';
-                                    statusText.textContent = 'Complete!';
+                                    statusText.textContent = 'Step 1 Complete!';
+                                    step1Btn.disabled = false;
+                                    step2Btn.disabled = false;
+                                    document.getElementById('selfCheckBtn').disabled = true; // Step 3 disabled until Step 2 is done
                                     updateFileSelect(statusData.processed_file);
+                                    checkExports(statusData.processed_file);
                                     resetForm();
                                 } else if (statusData.status === 'error') {
                                     clearInterval(pollInterval);
@@ -133,38 +250,406 @@
             });
 
             function resetForm() {
-                submitBtn.disabled = false;
                 setTimeout(() => {
                     progressContainer.style.display = 'none';
                     statusText.textContent = '';
                 }, 2000);
             }
-
-            function updateFileSelect(filename) {
-                const select = document.getElementById('fileSelect');
-                let optionExists = Array.from(select.options).some(opt => opt.value === filename);
-                
-                if (!optionExists) {
-                    const option = document.createElement('option');
-                    option.value = filename;
-                    option.text = filename;
-                    select.add(option);
-                }
-                select.value = filename;
-                loadData();
-            }
         });
 
-        function loadData() {
+        document.getElementById('step2Btn').addEventListener('click', function() {
             const filename = document.getElementById('fileSelect').value;
-            if (!filename) return;
+            if (!filename) {
+                alert("Please run Step 1 first or select a file from the dropdown.");
+                return;
+            }
+            
+            const step2Btn = this;
+            const progressContainer = document.getElementById('progress-container-step2');
+            const progressBar = document.getElementById('progress-bar-step2');
+            const statusText = document.getElementById('status-text-step2');
+            
+            step2Btn.disabled = true;
+            document.getElementById('selfCheckBtn').disabled = true; // Disable Step 3 while Step 2 is running
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            statusText.textContent = 'Starting Step 2...';
+            
+            fetch('/step2_relations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: filename })
+            })
+            .then(response => response.json())
+            .then(initData => {
+                 if (initData.error) {
+                    alert(initData.error);
+                    step2Btn.disabled = false;
+                } else {
+                    const taskId = initData.task_id;
+                    const pollInterval = setInterval(() => {
+                        fetch(`/status/${taskId}`)
+                            .then(res => res.json())
+                            .then(statusData => {
+                                if (statusData.status === 'processing') {
+                                    progressBar.style.width = statusData.progress + '%';
+                                    statusText.textContent = statusData.message;
+                                } else if (statusData.status === 'completed') {
+                                    clearInterval(pollInterval);
+                                    progressBar.style.width = '100%';
+                                    statusText.textContent = 'Step 2 Complete!';
+                                    updateFileSelect(statusData.processed_file); // Update with final JSON
+                                    checkExports(statusData.processed_file);
+                                    document.getElementById('selfCheckBtn').disabled = false; // Enable Step 3
+                                    step2Btn.disabled = false;
+                                    setTimeout(() => {
+                                        progressContainer.style.display = 'none';
+                                        statusText.textContent = '';
+                                    }, 2000);
+                                } else if (statusData.status === 'error') {
+                                    clearInterval(pollInterval);
+                                    alert('Error: ' + statusData.message);
+                                    step2Btn.disabled = false;
+                                }
+                            });
+                    }, 1000);
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                step2Btn.disabled = false;
+            });
+        });
 
-            fetch(`/get_processed_data/${filename}`)
+        function updateFileSelect(filename) {
+            const select = document.getElementById('fileSelect');
+            let optionExists = Array.from(select.options).some(opt => opt.value === filename);
+            
+            if (!optionExists) {
+                const option = document.createElement('option');
+                option.value = filename;
+                option.text = filename;
+                select.add(option);
+            }
+            select.value = filename;
+            loadData();
+        }
+
+        function checkExports(filename) {
+            if (!filename) return;
+            const baseFilename = filename.replace(/_components\.json$/, '').replace(/\.json$/, '');
+            
+            fetch(`/list_exports/${baseFilename}`)
+                .then(response => response.json())
+                .then(files => {
+                    document.getElementById('exportStep1Btn').disabled = !files.component_file;
+                    document.getElementById('visualizeStep1Btn').disabled = !files.component_file;
+                    document.getElementById('exportStep2Btn').disabled = !files.relation_file;
+                    document.getElementById('visualizeStep2Btn').disabled = !files.relation_file;
+                    document.getElementById('exportStep3Btn').disabled = !files.checked_file;
+                    document.getElementById('visualizeStep3Btn').disabled = !files.checked_file;
+                    document.getElementById('exportErrorLogBtn').disabled = !files.log_file;
+                    document.getElementById('exportSelectedBtn').disabled = !files.checked_file;
+                    document.getElementById('visualizeSelectedBtn').disabled = !files.checked_file;
+                    document.getElementById('convertToImfBtn').disabled = !files.relation_file;
+                })
+                .catch(err => console.error('Error checking exports:', err));
+        }
+
+        function downloadFile(type) {
+            const selectedFile = document.getElementById('fileSelect').value;
+            if (!selectedFile) return;
+            const baseFilename = selectedFile.replace(/_components\.json$/, '').replace(/\.json$/, '');
+            
+            let url = '';
+            if (type === 'step1') url = `/download/components/${baseFilename}_components.json`;
+            else if (type === 'step2') url = `/download/relations/${baseFilename}.json`;
+            else if (type === 'step3_checked') url = `/download/self_checked_data/${baseFilename}_checked.json`;
+            else if (type === 'step3_log') url = `/download/logs/${baseFilename}_self_check.log`;
+            
+            if (url) window.location.href = url;
+        }
+        
+        document.getElementById('visualizeStep1Btn').addEventListener('click', function() {
+            const selectedFile = document.getElementById('fileSelect').value;
+            if (!selectedFile) return;
+
+            if (cy) {
+                cy.destroy();
+                cy = null;
+            }
+
+            const baseFilename = selectedFile.replace(/_components\.json$/, '').replace(/\.json$/, '');
+            const componentFilename = `${baseFilename}_components.json`;
+
+            fetch(`/get_processed_data/${componentFilename}`)
+                .then(response => response.json())
+                .then(data => {
+                    renderComponentGraph(data);
+                })
+                .catch(err => console.error('Error loading component data:', err));
+        });
+
+        document.getElementById('visualizeStep2Btn').addEventListener('click', function() {
+            const selectedFile = document.getElementById('fileSelect').value;
+            if (!selectedFile) return;
+
+            if (cy) {
+                cy.destroy();
+                cy = null;
+            }
+
+            fetch(`/get_processed_data/${selectedFile}`)
                 .then(response => response.json())
                 .then(data => {
                     renderGraph(data);
                 })
-                .catch(err => console.error('Error loading data:', err));
+                .catch(err => console.error('Error loading relation data:', err));
+        });
+
+        document.getElementById('visualizeStep3Btn').addEventListener('click', function() {
+            const selectedFile = document.getElementById('fileSelect').value;
+            if (!selectedFile) return;
+
+            if (cy) {
+                cy.destroy();
+                cy = null;
+            }
+
+            const baseFilename = selectedFile.replace(/_components\.json$/, '').replace(/\.json$/, '');
+            const checkedFilename = `${baseFilename}_checked.json`;
+
+            fetch(`/get_processed_data/${checkedFilename}`)
+                .then(response => response.json())
+                .then(data => {
+                    renderGraph(data);
+                })
+                .catch(err => console.error('Error loading verified relation data:', err));
+        });
+
+        document.getElementById('exportStep1Btn').addEventListener('click', () => downloadFile('step1'));
+        document.getElementById('exportStep2Btn').addEventListener('click', () => downloadFile('step2'));
+        document.getElementById('exportStep3Btn').addEventListener('click', () => downloadFile('step3_checked'));
+
+        // Export Selected Relations Logic
+        const exportSelectedBtn = document.getElementById('exportSelectedBtn');
+        const visualizeSelectedBtn = document.getElementById('visualizeSelectedBtn');
+        const exportErrorLogBtn = document.getElementById('exportErrorLogBtn');
+        const relationModal = document.getElementById('relation-modal');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const cancelExportBtn = document.getElementById('cancelExportBtn');
+        const confirmExportBtn = document.getElementById('confirmExportBtn');
+        const visualizeExportBtn = document.getElementById('visualizeExportBtn');
+        const convertToImfBtn = document.getElementById('convertToImfBtn');
+        const imfModal = document.getElementById('imf-modal');
+        const cancelImfBtn = document.getElementById('cancelImfBtn');
+        const confirmImfBtn = document.getElementById('confirmImfBtn');
+
+        exportSelectedBtn.addEventListener('click', function() {
+            relationModal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+        });
+
+        visualizeSelectedBtn.addEventListener('click', function() {
+            relationModal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+        });
+
+        function closeModal() {
+            relationModal.style.display = 'none';
+            modalOverlay.style.display = 'none';
+            imfModal.style.display = 'none';
+        }
+
+        cancelImfBtn.addEventListener('click', closeModal);
+        cancelExportBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', closeModal);
+
+        confirmExportBtn.addEventListener('click', function() {
+            const selectedFile = document.getElementById('fileSelect').value;
+            if (!selectedFile) return;
+            
+            const baseFilename = selectedFile.replace(/_components\.json$/, '').replace(/\.json$/, '');
+            const checkboxes = document.querySelectorAll('#relation-modal input[type="checkbox"]:checked');
+            const relations = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (relations.length === 0) {
+                alert("Please select at least one relation.");
+                return;
+            }
+            
+            const url = `/export_custom_relations?filename=${encodeURIComponent(baseFilename)}&relations=${relations.join(',')}`;
+            // Trigger download
+            window.location.href = url;
+            closeModal();
+        });
+
+        visualizeExportBtn.addEventListener('click', function() {
+            const selectedFile = document.getElementById('fileSelect').value;
+            if (!selectedFile) return;
+            
+            const baseFilename = selectedFile.replace(/_components\.json$/, '').replace(/\.json$/, '');
+            const checkboxes = document.querySelectorAll('#relation-modal input[type="checkbox"]:checked');
+            const relations = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (relations.length === 0) {
+                alert("Please select at least one relation.");
+                return;
+            }
+            
+            fetch(`/visualize_custom_relations?filename=${encodeURIComponent(baseFilename)}&relations=${relations.join(',')}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        if (cy) { cy.destroy(); cy = null; }
+                        fetch(`/get_processed_data/${data.filename}`)
+                            .then(resp => resp.json())
+                            .then(graphData => {
+                                renderGraph(graphData);
+                                closeModal();
+                            });
+                    }
+                })
+                .catch(err => console.error('Error visualizing custom relations:', err));
+        });
+
+        convertToImfBtn.addEventListener('click', function() {
+            imfModal.style.display = 'block';
+            modalOverlay.style.display = 'block';
+        });
+
+        confirmImfBtn.addEventListener('click', function() {
+            const selectedFile = document.getElementById('fileSelect').value;
+            if (!selectedFile) return;
+            const baseFilename = selectedFile.replace(/_components\.json$/, '').replace(/\.json$/, '');
+            
+            const type = document.querySelector('input[name="imfModelType"]:checked').value;
+            
+            const url = `/convert_to_imf?filename=${encodeURIComponent(baseFilename)}&type=${type}`;
+            // Trigger download
+            window.location.href = url;
+            
+            closeModal();
+        });
+
+        document.getElementById('selfCheckBtn').addEventListener('click', function() {
+            const filename = document.getElementById('fileSelect').value;
+            if (!filename) {
+                alert("Please select a file first.");
+                return;
+            }
+            
+            // Disable all action buttons
+            document.getElementById('step1Btn').disabled = true;
+            const btn = this;
+            const progressContainer = document.getElementById('progress-container-step3');
+            const progressBar = document.getElementById('progress-bar-step3');
+            const statusText = document.getElementById('status-text-step3');
+
+            document.getElementById('step2Btn').disabled = true;
+            btn.disabled = true;
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
+            statusText.textContent = 'Starting self-check...';
+            statusText.style.color = 'orange';
+
+            fetch('/self_check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: filename })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    statusText.textContent = 'Error: ' + data.error;
+                    statusText.style.color = 'red';
+                    btn.disabled = false;
+                    setTimeout(() => { progressContainer.style.display = 'none'; }, 2000);
+                } else {
+                    const taskId = data.task_id;
+                    const pollInterval = setInterval(() => {
+                        fetch(`/status/${taskId}`)
+                            .then(res => res.json())
+                            .then(statusData => {
+                                if (statusData.status === 'processing') {
+                                    progressBar.style.width = statusData.progress + '%';
+                                    statusText.textContent = `Processing: ${statusData.message} (${statusData.progress}%)`;
+                                } else if (statusData.status === 'completed') {
+                                    clearInterval(pollInterval);
+                                    progressBar.style.width = '100%';
+                                    statusText.textContent = statusData.message;
+                                    statusText.style.color = 'green';
+                                    checkExports(filename);
+                                    document.getElementById('step1Btn').disabled = false;
+                                    document.getElementById('step2Btn').disabled = false;
+                                    btn.disabled = false;
+                                    setTimeout(() => {
+                                        progressContainer.style.display = 'none';
+                                        statusText.textContent = '';
+                                    }, 2000);
+                                } else if (statusData.status === 'error') {
+                                    clearInterval(pollInterval);
+                                    statusText.textContent = 'Error: ' + statusData.message;
+                                    statusText.style.color = 'red';
+                                    document.getElementById('step1Btn').disabled = false;
+                                    document.getElementById('step2Btn').disabled = false;
+                                    btn.disabled = false;
+                                    setTimeout(() => { progressContainer.style.display = 'none'; }, 2000);
+                                }
+                            });
+                    }, 1000);
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                statusText.textContent = 'Request failed.';
+                statusText.style.color = 'red';
+                document.getElementById('step1Btn').disabled = false;
+                document.getElementById('step2Btn').disabled = false;
+                btn.disabled = false;
+                setTimeout(() => { progressContainer.style.display = 'none'; }, 2000);
+            });
+        });
+
+        document.getElementById('exportErrorLogBtn').addEventListener('click', () => downloadFile('step3_log'));
+
+        function loadData() {
+            const filename = document.getElementById('fileSelect').value;
+            const selfCheckBtn = document.getElementById('selfCheckBtn');
+            const exportSelectedBtn = document.getElementById('exportSelectedBtn');
+            const visualizeSelectedBtn = document.getElementById('visualizeSelectedBtn');
+            const convertToImfBtn = document.getElementById('convertToImfBtn');
+
+            // Reset buttons and clear graph
+            if (selfCheckBtn) selfCheckBtn.disabled = true;
+            if (exportSelectedBtn) exportSelectedBtn.disabled = true;
+            if (convertToImfBtn) convertToImfBtn.disabled = true;
+            if (visualizeSelectedBtn) visualizeSelectedBtn.disabled = true;
+            document.getElementById('step2Btn').disabled = true; // Disable step 2 until step 1 is run
+            if (cy) {
+                cy.destroy();
+                cy = null;
+            }
+
+            if (!filename) {
+                return;
+            }
+
+            // Check available exports for this file
+            checkExports(filename);
+            document.getElementById('step1Btn').disabled = false; // Always enable step 1
+
+            // Do not visualize intermediate component files from Step 1
+            if (filename.endsWith('_components.json')) {
+                document.getElementById('step2Btn').disabled = false;
+                return;
+            }
+
+            // For final relation files, enable self-check and render the graph
+            if (selfCheckBtn) selfCheckBtn.disabled = false;
+            document.getElementById('step2Btn').disabled = false; // Enable step 2 if a relation file is loaded
         }
 
         function sendQuestion() {
@@ -174,10 +659,6 @@
             const chatHistory = document.getElementById('chat-history');
 
             if (!question) return;
-            if (!filename) {
-                alert("Please select a file first.");
-                return;
-            }
 
             // Add user message
             chatHistory.innerHTML += `<div class="message user-msg">${question}</div>`;
@@ -257,6 +738,52 @@
                     { selector: '.connectedTo', style: { 'line-color': '#FF4136', 'target-arrow-color': '#FF4136' } },
                     { selector: '.fulfills', style: { 'line-color': '#2ECC40', 'target-arrow-color': '#2ECC40', 'line-style': 'dotted' } },
                     { selector: '.hasTerminal', style: { 'line-color': '#FF851B', 'target-arrow-color': '#FF851B' } }
+                ],
+                layout: { name: 'cose', animate: false, padding: 50, nodeRepulsion: 4500, idealEdgeLength: 100 }
+            });
+        }
+
+        function renderComponentGraph(data) {
+            const elements = [];
+            const nodes = new Set();
+
+            const addNode = (id) => {
+                if (!nodes.has(id)) {
+                    elements.push({ 
+                        data: { id: id, label: id, type: 'component' }, 
+                        style: { 'background-color': '#0074D9', 'shape': 'rectangle' } 
+                    });
+                    nodes.add(id);
+                }
+            };
+
+            function traverse(currentData, parentId) {
+                Object.entries(currentData).forEach(([key, value]) => {
+                    addNode(key);
+                    if (parentId) {
+                        elements.push({ data: { source: key, target: parentId, label: 'partOf' }, classes: 'partOf' });
+                    }
+                    
+                    if (Array.isArray(value)) {
+                        value.forEach(sub => {
+                            addNode(sub);
+                            elements.push({ data: { source: sub, target: key, label: 'partOf' }, classes: 'partOf' });
+                        });
+                    } else if (typeof value === 'object' && value !== null) {
+                        traverse(value, key);
+                    }
+                });
+            }
+
+            traverse(data, null);
+
+            cy = cytoscape({
+                container: document.getElementById('cy'),
+                elements: elements,
+                style: [
+                    { selector: 'node', style: { 'label': 'data(label)', 'color': '#fff', 'text-valign': 'center', 'text-halign': 'center', 'width': 'label', 'height': 'label', 'padding': '10px', 'font-size': '10px', 'text-wrap': 'wrap', 'text-max-width': '100px' } },
+                    { selector: 'edge', style: { 'width': 1, 'curve-style': 'bezier', 'target-arrow-shape': 'triangle', 'label': 'data(label)', 'font-size': '8px', 'text-rotation': 'autorotate', 'text-background-color': '#fff', 'text-background-opacity': 0.8 } },
+                    { selector: '.partOf', style: { 'line-color': '#999', 'target-arrow-color': '#999', 'line-style': 'dashed' } }
                 ],
                 layout: { name: 'cose', animate: false, padding: 50, nodeRepulsion: 4500, idealEdgeLength: 100 }
             });
