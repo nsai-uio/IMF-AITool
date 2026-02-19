@@ -1,8 +1,8 @@
 # IMF-AITool
 
-A LLM based web application for automatic IMF modelling tool.
+A LLM based web application for automatic IMF modelling.
 
-# Install
+# Install 
 install python
 ```conda create -n imf_web pip python=3.9```   
 
@@ -20,5 +20,10 @@ install packages
 ```source ~/.zshrc```
 
 
-# Run
+# Run the web application
 ```python app_user_panel.py```
+
+# Test with function-based scripts
+1. put your test files under path: ```test_scripts/uploads```;
+it will then ask you to choose one of the files to test.
+2. run ```python function_test.py```
