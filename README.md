@@ -27,3 +27,8 @@ install packages
 1. Put your test files under path: ```test_scripts/uploads```;
 it will then ask you to choose one of the files to test.
 2. Run ```python function_test.py```
+This script performs four tests:
+- Component extraction;
+- Relation extraction;
+- LLM self verification;
+- Convert verified result in json to IMF file that can be further used in IMF editor.
