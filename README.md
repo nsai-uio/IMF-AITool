@@ -24,11 +24,12 @@ install packages
 ```python app_user_panel.py```
 
 # Test with function-based scripts
-1. Put your test files under path: ```test_scripts/uploads```;
+1. Download codes in ```test_scripts```;
+2. Put your test files under path: ```test_scripts/uploads```;
 it will then ask you to choose one of the files to test.
-2. Run ```python function_test.py```
+3. Run ```python function_test.py```
 This script performs four tests:
-- Component extraction;
-- Relation extraction;
-- LLM self verification;
+- Component extraction.
+- Relation extraction (partOf, fulfills, connectedTo, hasTerminal).
+- LLM self verification; Note that currently it only verifies "partOf" and "fulfills" relations.
 - Convert verified result in json to IMF file that can be further used in IMF editor.
