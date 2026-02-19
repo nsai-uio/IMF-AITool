@@ -10,8 +10,6 @@ import threading
 import uuid
 from datetime import datetime
 from dotenv import load_dotenv
-# from utils import get_pdf_vector, create_qa_chain 
-# from utils import parse_json
 import google.generativeai as genai
 from PyPDF2 import PdfReader
 
@@ -22,20 +20,18 @@ from PyPDF2 import PdfReader
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Needed for session management
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['VECTOR_STORE_FOLDER'] = 'vector_store'
-app.config['PROCESSED_DATA_FOLDER'] = 'processed_data'
-app.config['COMPONENTS_FOLDER'] = 'components'
-app.config['RELATIONS_FOLDER'] = 'relations'
-app.config['LOGS_FOLDER'] = 'logs'
-app.config['SELF_CHECKED_DATA_FOLDER'] = 'self_checked_data'
-app.config['CUSTOM_DATA_FOLDER'] = 'custom_data'
-app.config['IMF_DATA_FOLDER'] = 'imf_data'
+app.config['COMPONENTS_FOLDER'] = os.path.join('results', 'components')
+app.config['RELATIONS_FOLDER'] = os.path.join('results', 'relations')
+app.config['LOGS_FOLDER'] = os.path.join('results', 'logs')
+app.config['SELF_CHECKED_DATA_FOLDER'] = os.path.join('results', 'self_checked_data')
+app.config['CUSTOM_DATA_FOLDER'] = os.path.join('results', 'custom_data')
+app.config['IMF_DATA_FOLDER'] = os.path.join('results', 'imf_data')
 app.config['ALLOWED_EXTENSIONS'] = {'pdf'}
 
 # Ensure upload and vector store directories exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs(app.config['VECTOR_STORE_FOLDER'], exist_ok=True)
-os.makedirs(app.config['PROCESSED_DATA_FOLDER'], exist_ok=True)
+# os.makedirs(app.config['VECTOR_STORE_FOLDER'], exist_ok=True)
+# os.makedirs(app.config['PROCESSED_DATA_FOLDER'], exist_ok=True)
 os.makedirs(app.config['COMPONENTS_FOLDER'], exist_ok=True)
 os.makedirs(app.config['RELATIONS_FOLDER'], exist_ok=True)
 os.makedirs(app.config['LOGS_FOLDER'], exist_ok=True)
@@ -317,6 +313,12 @@ Example for your response:
                 elif original_claim_info['type'] == 'fulfills' and val_to_remove in modified_data[comp].get('fulfills', []):
                     modified_data[comp]['fulfills'].remove(val_to_remove)
 
+        # Always save the checked file, even if no corrections were made
+        checked_filename = os.path.splitext(json_filename)[0] + '_checked.json'
+        checked_filepath = os.path.join(app.config['SELF_CHECKED_DATA_FOLDER'], checked_filename)
+        with open(checked_filepath, 'w') as f:
+            json.dump(modified_data, f, indent=4)
+
         if corrections_log:
             log_filename = os.path.splitext(json_filename)[0] + "_self_check.log"
             log_filepath = os.path.join(app.config['LOGS_FOLDER'], log_filename)
@@ -324,10 +326,6 @@ Example for your response:
                 log_file.write(f"\n--- Self-check for {json_filename} at {datetime.now()} ---\n")
                 log_file.writelines(corrections_log)
 
-            checked_filename = os.path.splitext(json_filename)[0] + '_checked.json'
-            checked_filepath = os.path.join(app.config['SELF_CHECKED_DATA_FOLDER'], checked_filename)
-            with open(checked_filepath, 'w') as f:
-                json.dump(modified_data, f, indent=4)
             message = f'Self-check complete. {len(corrections_log)} corrections made. See {log_filename} and {checked_filename}.'
         else:
             message = 'Self-check complete. No inconsistencies found.'
