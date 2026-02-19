@@ -24,6 +24,6 @@ install packages
 ```python app_user_panel.py```
 
 # Test with function-based scripts
-1. put your test files under path: ```test_scripts/uploads```;
+1. Put your test files under path: ```test_scripts/uploads```;
 it will then ask you to choose one of the files to test.
-2. run ```python function_test.py```
+2. Run ```python function_test.py```
