@@ -1,7 +1,7 @@
 import os
 import time
 import random
-from flask import Flask, request, jsonify, render_template, send_from_directory, send_file
+from flask import Flask, request, jsonify, render_template, send_from_directory, send_file, session
 from io import BytesIO
 from werkzeug.utils import secure_filename
 import re
@@ -16,10 +16,11 @@ import google.generativeai as genai
 from PyPDF2 import PdfReader
 
 # Load environment variables from .env file
-load_dotenv()
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# load_dotenv()
+# The API key will be configured on-demand per request/session.
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)  # Needed for session management
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['VECTOR_STORE_FOLDER'] = 'vector_store'
 app.config['PROCESSED_DATA_FOLDER'] = 'processed_data'
@@ -80,8 +81,9 @@ def parse_json(results_string):
             print(f"JSON format error: {e}")
         return {}
 
-def extract_components_task(task_id, pdf_path, filename, components_folder):
+def extract_components_task(task_id, pdf_path, filename, components_folder, api_key):
     try:
+        genai.configure(api_key=api_key)
         task_status[task_id] = {'status': 'processing', 'progress': 5, 'message': 'Extracting text...'}
         
         # Extract text from the saved PDF
@@ -130,8 +132,9 @@ def extract_components_task(task_id, pdf_path, filename, components_folder):
     except Exception as e:
         task_status[task_id] = {'status': 'error', 'message': str(e)}
 
-def extract_relations_task(task_id, filename, components_folder, relations_folder, upload_folder):
+def extract_relations_task(task_id, filename, components_folder, relations_folder, upload_folder, api_key):
     try:
+        genai.configure(api_key=api_key)
         task_status[task_id] = {'status': 'processing', 'progress': 5, 'message': 'Loading data...'}
         
         # Load text from txt file (saved in step 1)
@@ -208,8 +211,9 @@ def extract_relations_task(task_id, filename, components_folder, relations_folde
     except Exception as e:
         task_status[task_id] = {'status': 'error', 'message': str(e)}
 
-def self_check_task(task_id, json_filename):
+def self_check_task(task_id, json_filename, api_key):
     try:
+        genai.configure(api_key=api_key)
         task_status[task_id] = {'status': 'processing', 'progress': 5, 'message': 'Starting self-check...'}
 
         # 1. Define paths and load data
@@ -643,14 +647,71 @@ def allowed_file(filename):
 def index():
     # List available processed JSON files to potentially display in the UI
     processed_files = []
-    for f in os.listdir(app.config['RELATIONS_FOLDER']):
-        if f.endswith('.json'):
-            processed_files.append(f)
+    if session.get('google_api_key'):
+        for f in os.listdir(app.config['RELATIONS_FOLDER']):
+            if f.endswith('.json'):
+                processed_files.append(f)
     return render_template('index.html', processed_files=processed_files)
 
+@app.route('/validate_api_key', methods=['POST'])
+def validate_api_key():
+    data = request.get_json()
+    source = data.get('source')
+
+    api_key = None
+    if source == 'input':
+        api_key = data.get('key')
+        if not api_key:
+            return jsonify({'valid': False, 'message': 'No API key provided.'}), 400
+    elif source == 'local':
+        load_dotenv()
+        api_key = os.getenv("GOOGLE_API_KEY")
+        if not api_key:
+            return jsonify({'valid': False, 'message': 'Local GOOGLE_API_KEY not found in .env file or environment variables.'}), 400
+    else:
+        return jsonify({'valid': False, 'message': 'Invalid key source specified.'}), 400
+
+    try:
+        # This is a temporary, non-thread-safe way to validate.
+        # It globally configures the key, validates, and then the key is stored in session.
+        # Subsequent calls will use the session key and configure it within a thread.
+        genai.configure(api_key=api_key)
+        next(genai.list_models())  # A simple, quick call to check authentication
+
+        # If validation is successful, store the key in the user's session
+        session['google_api_key'] = api_key
+
+        return jsonify({'valid': True, 'message': 'API key is valid and has been set for this session.'})
+    except Exception as e:
+        print(f"API Key validation error: {e}")
+        # Clear the invalid key from the global config to prevent accidental use.
+        genai.configure(api_key='INVALID_KEY_PLACEHOLDER')
+        return jsonify({'valid': False, 'message': 'The provided API key appears to be invalid.'}), 400
+
+
+@app.route('/remove_api_key', methods=['POST'])
+def remove_api_key():
+    """Removes the Google API key from the user's session."""
+    session.pop('google_api_key', None)
+    return jsonify({'success': True, 'message': 'API key has been removed from the session.'})
+
+@app.route('/list_processed_files')
+def list_processed_files():
+    if not session.get('google_api_key'):
+        return jsonify([])
+    
+    files = []
+    for f in os.listdir(app.config['RELATIONS_FOLDER']):
+        if f.endswith('.json'):
+            files.append(f)
+    return jsonify(files)
 
 @app.route('/step1_components', methods=['POST'])
 def step1_components():
+    api_key = session.get('google_api_key')
+    if not api_key:
+        return jsonify({'error': 'Google API Key not set. Please set it first.'}), 400
+
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     file = request.files['file']
@@ -662,7 +723,7 @@ def step1_components():
         file.save(pdf_path)
 
         task_id = str(uuid.uuid4())
-        thread = threading.Thread(target=extract_components_task, args=(task_id, pdf_path, filename, app.config['COMPONENTS_FOLDER']))
+        thread = threading.Thread(target=extract_components_task, args=(task_id, pdf_path, filename, app.config['COMPONENTS_FOLDER'], api_key))
         thread.start()
 
         return jsonify({'task_id': task_id}), 202
@@ -671,6 +732,10 @@ def step1_components():
 
 @app.route('/step2_relations', methods=['POST'])
 def step2_relations():
+    api_key = session.get('google_api_key')
+    if not api_key:
+        return jsonify({'error': 'Google API Key not set. Please set it first.'}), 400
+
     data = request.get_json()
     filename = data.get('filename')
     
@@ -686,13 +751,17 @@ def step2_relations():
         base_filename = filename
 
     task_id = str(uuid.uuid4())
-    thread = threading.Thread(target=extract_relations_task, args=(task_id, base_filename, app.config['COMPONENTS_FOLDER'], app.config['RELATIONS_FOLDER'], app.config['UPLOAD_FOLDER']))
+    thread = threading.Thread(target=extract_relations_task, args=(task_id, base_filename, app.config['COMPONENTS_FOLDER'], app.config['RELATIONS_FOLDER'], app.config['UPLOAD_FOLDER'], api_key))
     thread.start()
 
     return jsonify({'task_id': task_id}), 202
 
 @app.route('/self_check', methods=['POST'])
 def self_check():
+    api_key = session.get('google_api_key')
+    if not api_key:
+        return jsonify({'error': 'Google API Key not set. Please set it first.'}), 400
+
     data = request.get_json()
     json_filename = data.get('filename')
 
@@ -700,13 +769,16 @@ def self_check():
         return jsonify({'error': 'Missing filename for self-check'}), 400
 
     task_id = str(uuid.uuid4())
-    thread = threading.Thread(target=self_check_task, args=(task_id, json_filename))
+    thread = threading.Thread(target=self_check_task, args=(task_id, json_filename, api_key))
     thread.start()
 
     return jsonify({'task_id': task_id}), 202
 
 @app.route('/list_exports/<base_filename>')
 def list_exports(base_filename):
+    if not session.get('google_api_key'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
     files_to_check = {
         'component_file': ('components', f"{base_filename}_components.json"),
         'relation_file': ('relations', f"{base_filename}.json"),
@@ -728,6 +800,9 @@ def list_exports(base_filename):
 
 @app.route('/export_custom_relations')
 def export_custom_relations():
+    if not session.get('google_api_key'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
     base_filename = request.args.get('filename')
     relations_param = request.args.get('relations')
     
@@ -772,6 +847,9 @@ def export_custom_relations():
 
 @app.route('/visualize_custom_relations')
 def visualize_custom_relations():
+    if not session.get('google_api_key'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
     base_filename = request.args.get('filename')
     relations_param = request.args.get('relations')
     
@@ -811,6 +889,9 @@ def visualize_custom_relations():
 
 @app.route('/convert_to_imf')
 def convert_to_imf():
+    if not session.get('google_api_key'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
     base_filename = request.args.get('filename')
     model_type = request.args.get('type')
     
@@ -847,6 +928,9 @@ def convert_to_imf():
 
 @app.route('/download/<folder>/<filename>')
 def download_file(folder, filename):
+    if not session.get('google_api_key'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
     folder_map = {
         'components': app.config['COMPONENTS_FOLDER'],
         'relations': app.config['RELATIONS_FOLDER'],
@@ -873,6 +957,10 @@ def task_status_route(task_id):
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    api_key = session.get('google_api_key')
+    if not api_key:
+        return jsonify({'error': 'Google API Key not set. Please set it on the main page.'}), 400
+
     data = request.get_json()
     question = data.get('question')
     filename = data.get('filename')
@@ -920,6 +1008,7 @@ def chat():
         return jsonify({'error': 'No context available (IMF Manual not found and no file selected).'}), 400
 
     try:
+        genai.configure(api_key=api_key)
         # Create prompt for Gemini
         prompt = f"Based on the following context, please answer the question and provide the citation.\n\nContext:\n{context_text}\nQuestion: {question}\n\nAnswer:"
         model = genai.GenerativeModel('gemini-2.5-pro')
@@ -932,6 +1021,9 @@ def chat():
 # New endpoint to serve processed JSON data
 @app.route('/get_processed_data/<filename>')
 def get_processed_data(filename):
+    if not session.get('google_api_key'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
     # Check relations folder first
     relations_path = os.path.join(app.config['RELATIONS_FOLDER'], secure_filename(filename))
     if os.path.exists(relations_path):

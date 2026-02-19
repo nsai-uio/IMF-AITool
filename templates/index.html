@@ -64,6 +64,135 @@
             </div>
 
             <div class="control-section">
+                <h3 style="margin-top: 0; font-size: 1rem; margin-bottom: 10px;">API Key Configuration</h3>
+                <p class="control-desc">Please choose a Google API key. You can either input your key or use the local key in the system environment.</p>
+                
+                <div id="api-key-controls" class="btn-row">
+                    <button type="button" onclick="showInputKey()">Input your key</button>
+                    <button type="button" onclick="useLocalKey()">Use the local key</button>
+                </div>
+
+                <!-- Input Field (Hidden by default) -->
+                <div id="key-input-area" style="display: none; margin-top: 15px;">
+                    <div class="btn-row">
+                        <input type="text" id="api-key-text" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" placeholder="Paste your Google API Key here">
+                        <button type="button" onclick="submitInputKey()">Validate</button>
+                    </div>
+                </div>
+
+                <!-- Status Message -->
+                <div id="api-key-status" style="margin-top: 10px; font-weight: bold; font-size: 0.8rem; text-align: center;"></div>
+
+                <!-- Remove Key Button (Hidden by default) -->
+                <div class="btn-row" style="margin-top: 10px; justify-content: center;">
+                    <button id="remove-key-btn" type="button" style="display: none; background-color: #c0392b;" onclick="removeApiKey()">Remove the key</button>
+                </div>
+            </div>
+            <script>
+                // This script block is for the API Key functionality.
+                function showInputKey() {
+                    document.getElementById('key-input-area').style.display = 'block';
+                    document.getElementById('api-key-status').innerText = '';
+                }
+
+                function useLocalKey() {
+                    document.getElementById('key-input-area').style.display = 'none';
+                    validateApiKey('local', null);
+                }
+
+                function submitInputKey() {
+                    const key = document.getElementById('api-key-text').value;
+                    if (!key) {
+                        alert("Please enter a key.");
+                        return;
+                    }
+                    validateApiKey('input', key);
+                }
+
+                function validateApiKey(source, key) {
+                    const statusDiv = document.getElementById('api-key-status');
+                    statusDiv.innerText = "Validating...";
+                    statusDiv.style.color = "blue";
+
+                    fetch('/validate_api_key', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ source: source, key: key }),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        statusDiv.innerText = data.message;
+                        if (data.valid) {
+                            statusDiv.style.color = "green";
+                            document.getElementById('remove-key-btn').style.display = 'inline-block';
+                            document.getElementById('api-key-controls').style.display = 'none';
+                            document.getElementById('key-input-area').style.display = 'none';
+                            document.getElementById('step1Btn').disabled = false;
+                            refreshFileList();
+                            loadData(); // Re-evaluates other button states
+                        } else {
+                            statusDiv.style.color = "red";
+                            document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = true);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        statusDiv.innerText = "An error occurred during validation.";
+                        statusDiv.style.color = "red";
+                        document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = true);
+                    });
+                }
+
+                function removeApiKey() {
+                    fetch('/remove_api_key', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        const statusDiv = document.getElementById('api-key-status');
+                        statusDiv.innerText = data.message;
+                        statusDiv.style.color = "black";
+                        document.getElementById('remove-key-btn').style.display = 'none';
+                        document.getElementById('api-key-controls').style.display = 'flex';
+                        document.getElementById('api-key-text').value = '';
+                        
+                        // Disable all buttons
+                        document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = true);
+                        document.querySelectorAll('.export-btn').forEach(btn => btn.disabled = true);
+
+                        // Clear file selection and graph
+                        const fileSelect = document.getElementById('fileSelect');
+                        fileSelect.innerHTML = '<option value="">-- Select Processed File --</option>';
+                        fileSelect.value = "";
+                        if (cy) {
+                            cy.destroy();
+                            cy = null;
+                        }
+
+                        // Clear chat history
+                        document.getElementById('chat-history').innerHTML = '<div class="message bot-msg">Ask anything about IMF. Select a file to ask questions.</div>';
+                    });
+                }
+
+                function refreshFileList() {
+                    fetch('/list_processed_files')
+                    .then(response => response.json())
+                    .then(files => {
+                        const select = document.getElementById('fileSelect');
+                        select.innerHTML = '<option value="">-- Select Processed File --</option>';
+                        files.forEach(file => {
+                            const option = document.createElement('option');
+                            option.value = file;
+                            option.text = file;
+                            select.add(option);
+                        });
+                    });
+                }
+
+                document.addEventListener('DOMContentLoaded', (event) => {
+                    document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = true);
+                });
+            </script>
+
+            <div class="control-section">
                 <h3 style="margin-top: 0; font-size: 1rem; margin-bottom: 10px;">File Selection</h3>
                 <input type="file" id="fileInput" name="file" accept=".pdf" style="width: 100%; margin-bottom: 10px; box-sizing: border-box;">
                 <select id="fileSelect" onchange="loadData()" style="width: 100%; padding: 5px;">
@@ -182,6 +311,7 @@
 
     <script>
         let cy;
+
 
         document.getElementById('step1Btn').addEventListener('click', function() {
             const fileInput = document.getElementById('fileInput');
@@ -639,7 +769,7 @@
 
             // Check available exports for this file
             checkExports(filename);
-            document.getElementById('step1Btn').disabled = false; // Always enable step 1
+            // document.getElementById('step1Btn').disabled = false; // This is now handled by API key logic
 
             // Do not visualize intermediate component files from Step 1
             if (filename.endsWith('_components.json')) {
