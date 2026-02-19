@@ -11,7 +11,8 @@ install packages
 
 ```pip install google-generativeai```
 
-# Set up environment variables locally for API key (Mac)
+# (Optional) Set up environment variables locally for API key (Mac)
+Skip this step if you prefer to add the key to the web application.
 1. Open your configuration file:
 ```nano ~/.zshrc```
 2. Add this line, then save and exit:
