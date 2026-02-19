@@ -6,7 +6,7 @@ import random
 
 def convert_json_to_imf(input_path, output_path):
     """
-    Converts a JSON system description to an IMF file format.
+    Converts a JSON output file to an IMF file format.
     """
     
     if not os.path.exists(input_path):
