@@ -1,4 +1,5 @@
 import json
+import argparse
 import os
 import time
 import random
@@ -307,6 +308,9 @@ def convert_json_to_imf(input_path, output_path):
     print(f"Generated IMF file at: {output_path}")
 
 if __name__ == "__main__":
-    input_json = "/Users/yanzho/Codes/SIM/processed_data/PATENT_gas_cooling_system.json"
-    output_imf = "/Users/yanzho/Codes/SIM/converted_gas_cooling_system.imf"
-    convert_json_to_imf(input_json, output_imf)
+    parser = argparse.ArgumentParser(description="Convert JSON to IMF format.")
+    parser.add_argument("input_path", help="Path to the input JSON file")
+    parser.add_argument("output_path", help="Path to the output IMF file")
+
+    args = parser.parse_args()
+    convert_json_to_imf(args.input_path, args.output_path)
