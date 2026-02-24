@@ -3,10 +3,10 @@
 A LLM based web application for automatic IMF modelling.
 
 # Install 
-install python
+install a new environment with python:
 ```conda create -n imf_web pip python=3.9```   
 
-install packages
+install packages:
 ```pip install Flask Werkzeug thread uuid-utils python-dotenv PyPDF2```
 
 ```pip install google-generativeai```
