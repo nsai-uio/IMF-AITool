@@ -33,17 +33,22 @@ The following table summarizes the key backend components and the frontend eleme
 | Category | Element | Type | Description |
 | :--- | :--- | :--- | :--- |
 | **Backend** | `app` | Flask Instance | The central application object handling configuration, routing, and session management. |
-| **Backend** | `extract_components_task` | Background Task | **Step 1**: Extracts text from PDF and uses LLM to generate a component hierarchy. |
+| **Backend** | `extract_components_task` | Background Task | **Step 1**: Extracts text from PDF and uses LLM to generate a hierarchical JSON dictionary of system components and subcomponents. |
 | **Backend** | `extract_relations_task` | Background Task | **Step 2**: Analyzes text and components to determine relations (tagID, partOf, fulfills, hasTerminal, connectedTo). |
-| **Backend** | `self_check_task` | Background Task | **Step 3**: Generates verification claims from the model and validates them against the source PDF. |
+| **Backend** | `self_check_task` | Background Task | **Step 3**: Generates verification claims from the extracted data and validates them against the source PDF. |
 | **Backend** | `convert_json_to_imf` | Utility Function | Converts structured JSON into IMF format (Nodes/Edges) with an auto-layout algorithm. |
-| **Backend** | `parse_json` | Utility Function | A robust parser to handle and repair potentially malformed JSON output from the LLM. |
+| **Backend** | `parse_json` | Utility Function | A robust parser designed to clean, handle, and repair potentially malformed JSON output returned by the LLM. |
 | **Backend** | `/validate_api_key` | API Endpoint | Validates the Google API Key and stores it in the user session. |
 | **Backend** | `/chat` | API Endpoint | Handles user queries by injecting document context and IMF manual text into the LLM prompt. |
-| **Backend** | `/status/<task_id>` | API Endpoint | Returns the current status and progress percentage of background tasks. |
-| **Frontend** | **Upload Interface** | UI Component | Allows users to upload PDF documents. |
-| **Frontend** | **Chat Interface** | UI Component | A chat window for querying with the document. |
-
+| **Backend** | `/status/<task_id>` | API Endpoint | Returns the current status (processing, completed, error) and progress percentage of background tasks. |
+| **Backend** | `/list_processed_files` | API Endpoint | Retrieves a list of all successfully processed JSON files available for visualization or querying. |
+| &nbsp; | &nbsp; | &nbsp; | &nbsp; |
+| **Frontend** | `validateApiKey()` | JS Function | Sends the user's API key to the `/validate_api_key` endpoint and updates the UI (enabling buttons/removing inputs) based on the validation result.|
+| **Frontend** | `removeApiKey()` | JS Function | Sends a POST request to `/remove_api_key` to clear the active key, disables all action buttons, clears the chat and the visual graph. |
+| **Frontend** | `pollTaskStatus()` | JS Function | Periodically polls the `/status/<task_id>` endpoint using setInterval to update UI text and progress indicators dynamically. |
+| **Frontend** | `refreshFileList()` | JS Function | Fetches available document names from `/list_processed_files` and populates the `#fileSelect` dropdown element. |
+| **Frontend** | `sendQuestion()` | JS Function | Captures user queries from the `#chat-input`, posts them to the `/chat endpoint`, and appends the AI's response to the `#chat-history` window. |
+| **Frontend** | `cytoscape` & `#cy` | JS Library / UI Container | Consumes the processed JSON data (Nodes/Edges) representing the system information model and renders it as an interactive visual graph.|
 
 ## 5. Technical Implementation Details
 
