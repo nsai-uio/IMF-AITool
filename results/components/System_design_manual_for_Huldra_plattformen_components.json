@@ -1,0 +1,20 @@
+{
+    "Sj\u00f8vann system_50": {
+        "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50A": {},
+        "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50B": {},
+        "Sj\u00f8vanns pumpekasse_50-TG50A": {},
+        "Sj\u00f8vanns pumpekasse_50-TG50B": {},
+        "Sj\u00f8vanns overbordkasse_50-TG51": {},
+        "Varmt sj\u00f8vanns sirkulasjonspumpe_50-PA51A": {},
+        "Varmt sj\u00f8vanns sirkulasjonspumpe_50-PA51B": {},
+        "Varmt sj\u00f8vanns sirkulasjonspumpe_50-PA52": {},
+        "Sj\u00f8vanns grovfilterpakke_50-CA50A": {
+            "Utbl\u00e5sningsventil_50-PSV2031": [],
+            "Differansetrykktransmitter_50-PDT2033": []
+        },
+        "Sj\u00f8vanns grovfilterpakke_50-CA50B": {
+            "Utbl\u00e5sningsventil_50-PSV2032": [],
+            "Differansetrykktransmitter_50-PDT2034": []
+        }
+    }
+}

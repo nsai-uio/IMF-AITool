@@ -1,0 +1,131 @@
+{
+    "COOLING SYSTEM": {
+        "liquid cooling chassis_100": {
+            "miner_101": [],
+            "dielectric fluid enclosure_102": [],
+            "pump_103": [],
+            "filter_104": [],
+            "check valve_105": [],
+            "isolation valve_106": [],
+            "isolation valve_107": [],
+            "sight glass_108": [],
+            "check valve_109": [],
+            "isolation valve_110": [],
+            "liquid level control valve_111": []
+        },
+        "liquid cooling chassis_600": {
+            "miner_601": [],
+            "dielectric fluid enclosure_602": [],
+            "pump_603": [],
+            "filter_604": [],
+            "check valve_605": [],
+            "isolation valve_606": [],
+            "isolation valve_607": [],
+            "sight glass_608": [],
+            "check valve_609": [],
+            "isolation valve_610": [],
+            "liquid level control valve_611": []
+        },
+        "water tank kit_200": {
+            "coil_201": [],
+            "relief valve_202": [],
+            "thermostat_203": [],
+            "air purger_204": [],
+            "isolation valve_205": [],
+            "water supply line_206": [],
+            "regulation valve_207": [],
+            "water pump_208": [],
+            "isolation valve_209": [],
+            "check valve_210": [],
+            "isolation valve_211": [],
+            "isolation valve_212": [],
+            "liquid level controller_213": [],
+            "isolation valve_214": [],
+            "primary chassis regulation valve_215": [],
+            "water tank_216": [],
+            "return water line_217": [],
+            "water outlet port_218": [],
+            "secondary chassis regulation valve_219": []
+        },
+        "water replenishing kit_300": {
+            "expansion tank_301": [],
+            "check valve_302": [],
+            "isolation valve_303": [],
+            "filter_304": [],
+            "isolation valve_305": []
+        },
+        "dry cooler_400": {
+            "coil_401": [],
+            "fan_402": [],
+            "flow control valve_403": []
+        },
+        "secondary fluid circle_500": {
+            "secondary return water port_501": [],
+            "secondary supply water port_502": [],
+            "isolation valve_503": [],
+            "pump_504": [],
+            "isolation valve_505": [],
+            "check valve_506": [],
+            "regulation valve_507": [],
+            "secondary coil_508": []
+        },
+        "secondary water tank kit_700": {
+            "isolation valve_701": [],
+            "pump_702": [],
+            "isolation valve_703": [],
+            "check valve_704": [],
+            "isolation valve_705": [],
+            "water tank_706": [],
+            "isolation valve_707": [],
+            "air purger_708": [],
+            "isolation valve_709": [],
+            "expansion tank_710": [],
+            "return water line_711": [],
+            "hot water supply line_712": []
+        },
+        "open expansion tank kit_800": {
+            "water inlet valve_801": [],
+            "expansion tank_802": [],
+            "overflow valve_803": [],
+            "isolation valve_804": [],
+            "isolation valve_805": [],
+            "circulation pump_806": [],
+            "check valve_807": [],
+            "isolation valve_808": []
+        },
+        "hot water reservoirs_901": {
+            "expansion tanks_905": [],
+            "air purgers_910": []
+        },
+        "digital boiler": {
+            "bottom section_1001": {
+                "tank_1007": [],
+                "hot water supply port_1014": [],
+                "temperature sensor_1015": [],
+                "sacrificial anode_1016": [],
+                "condensation drainage port_1017": [],
+                "reservoir drainage port_1018": [],
+                "cold-water port_1019": [],
+                "heating coil_1021": [],
+                "insulation layer_1022": [],
+                "auxiliary heater_1023": [],
+                "auxiliary heater port_1024": [],
+                "hot water drum_1025": [],
+                "sheet metal shell_1026": []
+            },
+            "top section_1002": {
+                "heat exchanger_1004": [],
+                "cooling fan_1005": [],
+                "power switcher_1006": [],
+                "miner_1008": [],
+                "miner container_1009": [],
+                "terminal box_1010": [],
+                "solenoid valve_1011": [],
+                "solenoid valve_1012": [],
+                "pump_1013": [],
+                "solenoid valve_1027": []
+            },
+            "controller_1003": {}
+        }
+    }
+}

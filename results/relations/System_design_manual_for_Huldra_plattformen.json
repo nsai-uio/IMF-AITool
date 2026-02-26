@@ -1,0 +1,270 @@
+{
+    "Sj\u00f8vann system_50": {
+        "tagID": "50",
+        "partOf": [],
+        "fulfills": [
+            "supply seawater to consumers",
+            "supply firewater to the platform",
+            "seawater intake",
+            "seawater pressurization",
+            "seawater filtration",
+            "seawater distribution"
+        ],
+        "connectedTo": [
+            "Diesel Generatorer",
+            "V\u00e5tgasskj\u00f8lere",
+            "Booster Kompressor Etterkj\u00f8ler",
+            "Kjemisk injeksjons pakke",
+            "HVAC",
+            "SAS-kontrollsystem"
+        ],
+        "hasTerminal": [
+            "Seawater",
+            "Firewater",
+            "Used Seawater"
+        ]
+    },
+    "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50A": {
+        "tagID": "50-PH50A",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "lift seawater from sea",
+            "pressurize seawater",
+            "supply firewater"
+        ],
+        "connectedTo": [
+            "Sj\u00f8vanns pumpekasse_50-TG50A",
+            "Sj\u00f8vanns grovfilterpakke_50-CA50A",
+            "Sj\u00f8vanns grovfilterpakke_50-CA50B",
+            "Diesel Generatorer"
+        ],
+        "hasTerminal": [
+            "Seawater Inlet",
+            "Pressurized Seawater Outlet",
+            "Electrical Power"
+        ]
+    },
+    "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50B": {
+        "tagID": "50-PH50B",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "lift seawater from sea",
+            "pressurize seawater",
+            "supply firewater"
+        ],
+        "connectedTo": [
+            "Sj\u00f8vanns pumpekasse_50-TG50B",
+            "Sj\u00f8vanns grovfilterpakke_50-CA50A",
+            "Sj\u00f8vanns grovfilterpakke_50-CA50B",
+            "Diesel Generatorer"
+        ],
+        "hasTerminal": [
+            "Seawater Inlet",
+            "Pressurized Seawater Outlet",
+            "Electrical Power"
+        ]
+    },
+    "Sj\u00f8vanns pumpekasse_50-TG50A": {
+        "tagID": "50-TG50A",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "provide seawater intake"
+        ],
+        "connectedTo": [
+            "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50A"
+        ],
+        "hasTerminal": [
+            "Seawater Inlet",
+            "Seawater Outlet"
+        ]
+    },
+    "Sj\u00f8vanns pumpekasse_50-TG50B": {
+        "tagID": "50-TG50B",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "provide seawater intake"
+        ],
+        "connectedTo": [
+            "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50B"
+        ],
+        "hasTerminal": [
+            "Seawater Inlet",
+            "Seawater Outlet"
+        ]
+    },
+    "Sj\u00f8vanns overbordkasse_50-TG51": {
+        "tagID": "50-TG51",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "collect and discharge used seawater overboard"
+        ],
+        "connectedTo": [],
+        "hasTerminal": [
+            "Used Seawater Inlet",
+            "Seawater Outlet"
+        ]
+    },
+    "Varmt sj\u00f8vanns sirkulasjonspumpe_50-PA51A": {
+        "tagID": "50-PA51A",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "circulate warm seawater to prevent hydrate formation in wet gas coolers"
+        ],
+        "connectedTo": [
+            "V\u00e5tgasskj\u00f8lere"
+        ],
+        "hasTerminal": [
+            "Warm Seawater Inlet",
+            "Pressurized Warm Seawater Outlet",
+            "Electrical Power"
+        ]
+    },
+    "Varmt sj\u00f8vanns sirkulasjonspumpe_50-PA51B": {
+        "tagID": "50-PA51B",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "circulate warm seawater to prevent hydrate formation in wet gas coolers"
+        ],
+        "connectedTo": [
+            "V\u00e5tgasskj\u00f8lere"
+        ],
+        "hasTerminal": [
+            "Warm Seawater Inlet",
+            "Pressurized Warm Seawater Outlet",
+            "Electrical Power"
+        ]
+    },
+    "Varmt sj\u00f8vanns sirkulasjonspumpe_50-PA52": {
+        "tagID": "50-PA52",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "circulate warm seawater to prevent hydrate formation in compressor aftercooler"
+        ],
+        "connectedTo": [
+            "Booster Kompressor Etterkj\u00f8ler"
+        ],
+        "hasTerminal": [
+            "Warm Seawater Inlet",
+            "Pressurized Warm Seawater Outlet",
+            "Electrical Power"
+        ]
+    },
+    "Sj\u00f8vanns grovfilterpakke_50-CA50A": {
+        "tagID": "50-CA50A",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "filter seawater particles larger than 200 micron",
+            "automatic backwashing"
+        ],
+        "connectedTo": [
+            "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50A",
+            "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50B",
+            "Sj\u00f8vanns grovfilterpakke_50-CA50B"
+        ],
+        "hasTerminal": [
+            "Unfiltered Seawater Inlet",
+            "Filtered Seawater Outlet",
+            "Backwash Outlet"
+        ]
+    },
+    "Utbl\u00e5sningsventil_50-PSV2031": {
+        "tagID": "50-PSV2031",
+        "partOf": [
+            "Sj\u00f8vanns grovfilterpakke_50-CA50A"
+        ],
+        "fulfills": [
+            "provide overpressure protection"
+        ],
+        "connectedTo": [],
+        "hasTerminal": [
+            "Overpressurized Seawater Inlet",
+            "Vented Seawater Outlet"
+        ]
+    },
+    "Differansetrykktransmitter_50-PDT2033": {
+        "tagID": "50-PDT2033",
+        "partOf": [
+            "Sj\u00f8vanns grovfilterpakke_50-CA50A"
+        ],
+        "fulfills": [
+            "measure differential pressure",
+            "trigger backwashing sequence",
+            "trigger alarm and filter changeover"
+        ],
+        "connectedTo": [],
+        "hasTerminal": [
+            "High Pressure Port",
+            "Low Pressure Port",
+            "Signal Output"
+        ]
+    },
+    "Sj\u00f8vanns grovfilterpakke_50-CA50B": {
+        "tagID": "50-CA50B",
+        "partOf": [
+            "Sj\u00f8vann system_50"
+        ],
+        "fulfills": [
+            "filter seawater particles larger than 200 micron",
+            "automatic backwashing"
+        ],
+        "connectedTo": [
+            "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50A",
+            "Sj\u00f8vanns l\u00f8ftepumpe_50-PH50B",
+            "Sj\u00f8vanns grovfilterpakke_50-CA50A"
+        ],
+        "hasTerminal": [
+            "Unfiltered Seawater Inlet",
+            "Filtered Seawater Outlet",
+            "Backwash Outlet"
+        ]
+    },
+    "Utbl\u00e5sningsventil_50-PSV2032": {
+        "tagID": "50-PSV2032",
+        "partOf": [
+            "Sj\u00f8vanns grovfilterpakke_50-CA50B"
+        ],
+        "fulfills": [
+            "provide overpressure protection"
+        ],
+        "connectedTo": [],
+        "hasTerminal": [
+            "Overpressurized Seawater Inlet",
+            "Vented Seawater Outlet"
+        ]
+    },
+    "Differansetrykktransmitter_50-PDT2034": {
+        "tagID": "50-PDT2034",
+        "partOf": [
+            "Sj\u00f8vanns grovfilterpakke_50-CA50B"
+        ],
+        "fulfills": [
+            "measure differential pressure",
+            "trigger backwashing sequence",
+            "trigger alarm and filter changeover"
+        ],
+        "connectedTo": [],
+        "hasTerminal": [
+            "High Pressure Port",
+            "Low Pressure Port",
+            "Signal Output"
+        ]
+    }
+}
