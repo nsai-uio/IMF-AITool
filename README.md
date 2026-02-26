@@ -1,6 +1,6 @@
 # IMF-AITool
 
-A LLM based web application for automatic IMF modelling.
+An LLM based web application for automatic IMF modelling.
 
 # Install 
 install a new environment with python:
